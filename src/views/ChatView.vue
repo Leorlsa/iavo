@@ -12,7 +12,7 @@
           <Message
             v-if="currentQuestion"
             :key="'input'"
-            :message="{ text: currentQuestion.text, isUser: true }"
+            :message="currentQuestion"
             :isUser="true"
             :isInput="true"
             @send="handleSend"
@@ -26,28 +26,36 @@
   import { defineComponent, ref, nextTick, onMounted, watch } from 'vue';
   import Message from '@/components/Message.vue';
   import { questions, Question } from '@/data/question';
-  
+
+  interface Message {
+    text: string;
+    isUser: boolean;
+    type?: 'text' | 'buttons';
+    options?: string[];
+  }
+
   export default defineComponent({
     name: 'ChatView',
     components: {
       Message,
     },
     setup() {
-      const messages = ref([]);
+      const messages = ref<Message[]>([]);
       const currentQuestion = ref<Question | null>(questions[0]);
       const chatContainer = ref(null);
       let questionIndex = 0;
       const userName = ref('');
       const preferredName = ref('');
-  
+
       const scrollToBottom = () => {
         nextTick(() => {
-          if (chatContainer.value) {
-            chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+          const container = chatContainer.value as HTMLElement | null;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
           }
         });
       };
-  
+
       const updateQuestionText = () => {
         if (currentQuestion.value?.text.includes('[Nome]')) {
           currentQuestion.value.text = currentQuestion.value.text.replace('[Nome]', userName.value);
@@ -56,17 +64,17 @@
           currentQuestion.value.text = currentQuestion.value.text.replace('[NomePreferido]', preferredName.value);
         }
       };
-  
-      const handleSend = (response) => {
+
+      const handleSend = (response: string) => {
         if (questionIndex === 0) {
           userName.value = response;
         } else if (questionIndex === 1) {
           preferredName.value = response;
         }
-  
+
         messages.value.push({ text: response, isUser: true });
         questionIndex++;
-  
+
         if (questionIndex < questions.length) {
           currentQuestion.value = questions[questionIndex];
           updateQuestionText();
@@ -76,17 +84,19 @@
         }
         scrollToBottom();
       };
-  
-      messages.value.push({ text: currentQuestion.value.text, isUser: false });
-  
+
+      if (currentQuestion.value) {
+        messages.value.push({ text: currentQuestion.value.text, isUser: false });
+      }
+
       onMounted(() => {
         scrollToBottom();
       });
-  
+
       watch(messages, () => {
         scrollToBottom();
       }, { deep: true });
-  
+
       return {
         messages,
         currentQuestion,
@@ -134,4 +144,3 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
   }
   </style>
-  
