@@ -34,9 +34,10 @@
               {{ option }}
             </button>
           </div>
-          <button v-if="message.type === 'text'" @click="sendResponse" class="p-3 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition duration-300 transform hover:scale-105">
+          <button v-if="message.type === 'text'" @click="() => sendResponse()" class="p-3 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition duration-300 transform hover:scale-105">
             Enviar
           </button>
+
         </div>
       </div>
     </div>
@@ -146,15 +147,16 @@ export default defineComponent({
 
     const sendResponse = (option: string | null = null) => {
       if (option) {
-        emit('send', option);
+        emit('send', option); // Envia o texto do botão clicado
       } else {
-        emit('send', response.value);
+        emit('send', response.value); // Envia a resposta digitada
       }
-      response.value = '';
+      response.value = ''; // Limpa o campo de resposta após o envio
       if (recognition && isListening.value) {
         recognition.stop();
       }
     };
+
 
     return {
       response,
