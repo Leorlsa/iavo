@@ -26,7 +26,27 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
+import { TextServiceClient } from '@google/generative-ai';
+
+// Configure a client with your API key
+const client = new TextServiceClient({
+  apiKey: 'AIzaSyByh63TEtmjLH2WpP2sxafq-VJoqz1mODI',
+});
+
+export const generateText = async (prompt: string) => {
+  try {
+    const response = await client.generateText({
+      prompt: {
+        text: prompt,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao gerar texto:', error);
+    throw error;
+  }
+};
 
 export default defineComponent({
   name: 'ChatInput',
@@ -38,15 +58,64 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const response = ref('');
+    const conversationHistory = ref<{ question: string, answer: string }[]>([]); // Armazena a conversa
+    const userResponses = ref<string[]>([]); // Armazena as respostas do usuário
 
-    const sendResponse = (option = null) => {
-      emit('send', option || response.value);
-      response.value = '';
+    // Carregar histórico do localStorage ao montar o componente
+    onMounted(() => {
+      const savedHistory = localStorage.getItem('conversationHistory');
+      if (savedHistory) {
+        conversationHistory.value = JSON.parse(savedHistory);
+        console.log('Histórico carregado:', conversationHistory.value);
+      }
+    });
+
+    const saveConversationHistory = () => {
+      console.log('Salvando conversa no localStorage:', conversationHistory.value);
+      localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory.value));
+    };
+
+    const sendResponse = async (option: string | null = null) => {
+      try {
+        // Capturar a resposta do usuário (opção clicada ou texto digitado)
+        const userResponse = option || response.value;
+
+        // Armazenar a resposta do usuário
+        userResponses.value.push(userResponse);
+
+        // Criar o prompt com todas as respostas do usuário
+        const prompt = userResponses.value.join(' ');
+
+        // Enviar o prompt para a IA e obter a pergunta gerada
+        const generatedText = await generateText(prompt);
+
+        // Armazenar no histórico a pergunta do robô e a resposta do usuário
+        conversationHistory.value.push({
+          question: props.question.text,  // A pergunta feita pelo robô (IA)
+          answer: userResponse,           // A resposta fornecida pelo usuário
+        });
+
+        console.log('Pergunta do robô:', props.question.text);
+        console.log('Resposta do usuário:', userResponse);
+        console.log('Texto gerado pela IA:', generatedText);
+
+        // Salvar no localStorage
+        saveConversationHistory();
+
+        // Emitir a resposta gerada pela IA
+        emit('send', generatedText);
+
+        // Limpar o campo de resposta
+        response.value = '';
+      } catch (error) {
+        console.error('Erro ao enviar resposta:', error);
+      }
     };
 
     return {
       response,
       sendResponse,
+      conversationHistory,
     };
   },
 });

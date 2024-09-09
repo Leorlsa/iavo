@@ -12,7 +12,7 @@
             <input
               v-model="response"
               type="text"
-              @keyup.enter="sendResponse"
+              @keyup.enter="sendResponse()"
               placeholder="Digite sua resposta..."
               class="p-3 flex-grow border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 transition duration-300"
             />
@@ -34,10 +34,9 @@
               {{ option }}
             </button>
           </div>
-          <button v-if="message.type === 'text'" @click="() => sendResponse()" class="p-3 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition duration-300 transform hover:scale-105">
+          <button v-if="message.type === 'text'" @click="sendResponse()" class="p-3 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition duration-300 transform hover:scale-105">
             Enviar
           </button>
-
         </div>
       </div>
     </div>
@@ -46,12 +45,33 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted, PropType } from 'vue';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
+const client = new GoogleGenerativeAI({
+  apiKey: 'AIzaSyByh63TEtmjLH2WpP2sxafq-VJoqz1mODI',
+});
+export const generateText = async (prompt: string) => {
+  try {
+    const response = await client.generateText({
+      prompt: {
+        text: prompt,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao gerar texto:', error);
+    throw error;
   }
+};
+
+// Estender a interface Window para incluir SpeechRecognition e webkitSpeechRecognition
+interface Window {
+  SpeechRecognition: {
+    new (): CustomSpeechRecognition;
+  };
+  webkitSpeechRecognition: {
+    new (): CustomSpeechRecognition;
+  };
 }
 
 interface CustomSpeechRecognition extends EventTarget {
@@ -74,6 +94,17 @@ interface Message {
   options?: string[];
 }
 
+declare global {
+  interface Window {
+    SpeechRecognition: {
+      new (): CustomSpeechRecognition;
+    };
+    webkitSpeechRecognition: {
+      new (): CustomSpeechRecognition;
+    };
+  }
+}
+
 export default defineComponent({
   name: 'Message',
   props: {
@@ -94,11 +125,12 @@ export default defineComponent({
   setup(props, { emit }) {
     const response = ref('');
     const isListening = ref(false);
+    const conversationHistory = ref<{ roboMessage: string; personMessage: string }[]>([]);
     let recognition: CustomSpeechRecognition | null = null;
 
     onMounted(() => {
       if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        const SpeechRecognition = (window.SpeechRecognition || window.webkitSpeechRecognition) as unknown as { new (): CustomSpeechRecognition };
+        const SpeechRecognition = (window.SpeechRecognition || window.webkitSpeechRecognition) as { new (): CustomSpeechRecognition };
         recognition = new SpeechRecognition();
         if (recognition) {
           recognition.lang = 'pt-BR';
@@ -145,24 +177,50 @@ export default defineComponent({
       }
     };
 
-    const sendResponse = (option: string | null = null) => {
+    const sendResponse = async (option: string | null = null) => {
+      let userResponse = '';
       if (option) {
-        emit('send', option); // Envia o texto do botão clicado
+        userResponse = option;
+        console.log('Resposta do usuário (opção):', option);
+        emit('send', option);
       } else {
-        emit('send', response.value); // Envia a resposta digitada
+        userResponse = response.value;
+        console.log('Resposta do usuário (texto):', response.value);
+        emit('send', response.value);
       }
-      response.value = ''; // Limpa o campo de resposta após o envio
+
+      conversationHistory.value.push({
+        roboMessage: props.message.text,
+        personMessage: userResponse,
+      });
+
+      console.log('Histórico de conversa atualizado:', conversationHistory.value);
+
+      response.value = '';
+
       if (recognition && isListening.value) {
         recognition.stop();
       }
-    };
 
+      // Verificar se a resposta é "Sim" para a pergunta sobre receber dicas da IAVO
+      if (props.message.text === 'Gostaria de receber as dicas da IAVO?' && userResponse === 'Sim') {
+        const prompt = conversationHistory.value.map(entry => `${entry.roboMessage} ${entry.personMessage}`).join(' ');
+        try {
+          const generatedText = await generateText(prompt);
+          console.log('Texto gerado pela IA:', generatedText);
+          emit('send', generatedText);
+        } catch (error) {
+          console.error('Erro ao gerar texto:', error);
+        }
+      }
+    };
 
     return {
       response,
       isListening,
       toggleListening,
       sendResponse,
+      conversationHistory,
     };
   },
 });

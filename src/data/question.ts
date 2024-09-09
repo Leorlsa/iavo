@@ -116,21 +116,11 @@ export interface Question {
       type: 'buttons',
       options: ['Sim', 'Não']
     },
-    {
-      text: 'Você gostaria de receber dicas regulares no seu dispositivo?',
-      type: 'buttons',
-      options: ['Sim', 'Não']
-    },
-    
+
     // Feedback
     {
-      text: 'Foi útil conversar comigo hoje?',
+      text: 'Gostaria de receber as dicas da IAVO?',
       type: 'buttons',
-      options: ['Sim', 'Não', 'Mais ou menos']
-    },
-    {
-      text: 'Tem algo mais que você gostaria de compartilhar ou perguntar?',
-      type: 'text'
+      options: ['Sim', 'Não']
     }
   ];
-  
