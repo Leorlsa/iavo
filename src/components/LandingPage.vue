@@ -1,11 +1,11 @@
 <template>
   <div class="landing-page">
     <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
+    <section class="hero imagem-fundo">
+      <div class="container text-white">
         <h1>IA Amiga do Idoso</h1>
         <p>Seu assistente pessoal para uma vida mais saudável e ativa na melhor idade.</p>
-        <button class="btn btn-primary">Comece Agora</button>
+        <button class="btn btn-primary" style="background-color: rgb(66, 133, 244)">Comece Agora</button>
       </div>
     </section>
 
@@ -43,7 +43,8 @@
       <div class="container">
         <h2>Pronto para Melhorar sua Qualidade de Vida?</h2>
         <p>Junte-se a milhares de idosos que já estão aproveitando os benefícios da nossa IA assistente.</p>
-        <button class="btn btn-secondary">Experimente Gratuitamente</button>
+
+          <a class="btn btn-secondary" href="/chat" style="background-color: rgb(66, 133, 244)">Use Gratuitamente</a>
       </div>
     </section>
 
@@ -78,6 +79,15 @@ export default {
   min-height: 100vh;
   background-color: #FAFAFA;
   color: #333333;
+}
+
+.imagem-fundo {
+  background-image: url('~@/assets/photos/pexels-shvetsa-5257302.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: rgba(0, 0, 0, 0.5);
+  background-blend-mode: darken;
 }
 
 .container {
@@ -123,7 +133,7 @@ export default {
 
 .features {
   padding: 80px 0;
-  background-color: white;
+  background-color: rgb(230, 240, 255);
 }
 
 .features h2 {
