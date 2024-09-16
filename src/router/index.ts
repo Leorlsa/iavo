@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import ChatView from '../views/ChatView.vue';
+import LandingPage from "@/components/LandingPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: LandingPage
   },
   {
     path: '/chat',
