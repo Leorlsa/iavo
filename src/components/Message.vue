@@ -46,18 +46,37 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted, PropType } from 'vue';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
 
 const client = new GoogleGenerativeAI({
   apiKey: 'AIzaSyByh63TEtmjLH2WpP2sxafq-VJoqz1mODI',
 });
 export const generateText = async (prompt: string) => {
   try {
-    const response = await client.generateText({
-      prompt: {
-        text: prompt,
+    const response = await axios.post(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
+      {
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt, // Texto da pergunta
+              },
+            ],
+          },
+        ],
       },
-    });
-    return response.data;
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        params: {
+          key: 'AIzaSyBTee6hs8KUhgA1V0SvmJjRMzgZp2yNrVg', // Chave da API
+        },
+      }
+    );
+
+    return response.data; // Retorna a resposta da API
   } catch (error) {
     console.error('Erro ao gerar texto:', error);
     throw error;
@@ -189,6 +208,7 @@ export default defineComponent({
         emit('send', response.value);
       }
 
+      // Adicionar a mensagem atual e a resposta do usuário ao histórico da conversa
       conversationHistory.value.push({
         roboMessage: props.message.text,
         personMessage: userResponse,
@@ -196,19 +216,31 @@ export default defineComponent({
 
       console.log('Histórico de conversa atualizado:', conversationHistory.value);
 
+      // Limpar o input de resposta
       response.value = '';
 
       if (recognition && isListening.value) {
         recognition.stop();
       }
 
-      // Verificar se a resposta é "Sim" para a pergunta sobre receber dicas da IAVO
-      if (props.message.text === 'Gostaria de receber as dicas da IAVO?' && userResponse === 'Sim') {
-        const prompt = conversationHistory.value.map(entry => `${entry.roboMessage} ${entry.personMessage}`).join(' ');
+      // Verifica se a pergunta é "Gostaria de receber as dicas da IAVO?" e a resposta do usuário é "Sim"
+      if (props.message.text === 'Gostaria de receber as dicas da IAVO?' && userResponse.toLowerCase() === 'sim') {
+        // Cria o prompt juntando todas as mensagens e respostas do histórico da conversa
+        const prompt = `De acordo com essas respostas, gere uma ajuda para esse usuário:\n` + 
+          conversationHistory.value
+            .map(entry => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
+            .join('\n');
+
+        console.log('Prompt enviado ao Gemini:', prompt); // Log para verificar o prompt enviado
+
         try {
+          // Envia o prompt para a API do Gemini
           const generatedText = await generateText(prompt);
           console.log('Texto gerado pela IA:', generatedText);
-          emit('send', generatedText);
+
+          // Enviar a resposta gerada pelo Gemini de volta para o chat
+          const iaResponse = generatedText.candidates[0].content.parts[0].text;
+          emit('send', iaResponse);
         } catch (error) {
           console.error('Erro ao gerar texto:', error);
         }
