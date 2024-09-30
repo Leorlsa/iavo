@@ -51,125 +51,123 @@ export const questions: Question[] = [
     options: ['Sentados', 'Em pé', 'Ambos'],
     category: 'Exercícios Físicos'
   },
-
-  // Novas Perguntas de Exercícios Físicos
   {
-    text: 'IAVO: Você tem costume de se alongar antes dos exercícios?',
+    text: 'Você tem costume de se alongar antes dos exercícios?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Prefere exercícios com peso corporal ou com equipamentos?',
+    text: 'Prefere exercícios com peso corporal ou com equipamentos?',
     type: 'buttons',
     options: ['Peso corporal', 'Com equipamentos'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Já tentou exercícios de respiração durante o exercício?',
+    text: 'Já tentou exercícios de respiração durante o exercício?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Você faz exercícios de manhã ou à tarde?',
+    text: 'Você faz exercícios de manhã ou à tarde?',
     type: 'buttons',
     options: ['Manhã', 'Tarde'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Seu objetivo é melhorar a mobilidade ou a força?',
+    text: 'Seu objetivo é melhorar a mobilidade ou a força?',
     type: 'buttons',
     options: ['Mobilidade', 'Força', 'Ambos'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Você já teve alguma lesão praticando exercícios?',
+    text: 'Você já teve alguma lesão praticando exercícios?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Costuma se hidratar durante os exercícios?',
+    text: 'Costuma se hidratar durante os exercícios?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Você prefere exercícios mais dinâmicos ou mais tranquilos?',
+    text: 'Você prefere exercícios mais dinâmicos ou mais tranquilos?',
     type: 'buttons',
     options: ['Dinâmicos', 'Tranquilos'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Quer saber sobre a importância do aquecimento antes do exercício?',
+    text: 'Quer saber sobre a importância do aquecimento antes do exercício?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Precisa de ajuda para criar um plano de exercícios?',
+    text: 'Precisa de ajuda para criar um plano de exercícios?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Como você está se sentindo em relação à sua saúde física?',
+    text: 'Como você está se sentindo em relação à sua saúde física?',
     type: 'text',
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Você faz alguma atividade física regularmente?',
+    text: 'Você faz alguma atividade física regularmente?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Tem algum desconforto físico que gostaria de mencionar?',
+    text: 'Tem algum desconforto físico que gostaria de mencionar?',
     type: 'text',
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Você prefere exercícios leves ou moderados?',
+    text: 'Você prefere exercícios leves ou moderados?',
     type: 'buttons',
     options: ['Leves', 'Moderados'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Qual parte do corpo você gostaria de fortalecer ou melhorar?',
+    text: 'Qual parte do corpo você gostaria de fortalecer ou melhorar?',
     type: 'text',
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Quer saber como organizar sua rotina de exercícios?',
+    text: 'Quer saber como organizar sua rotina de exercícios?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Prefere fazer exercícios em casa ou ao ar livre?',
+    text: 'Prefere fazer exercícios em casa ou ao ar livre?',
     type: 'buttons',
     options: ['Em casa', 'Ao ar livre'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Como você se sente após a prática de exercícios?',
+    text: 'Como você se sente após a prática de exercícios?',
     type: 'text',
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Quer incluir alongamentos ou exercícios de equilíbrio?',
+    text: 'Quer incluir alongamentos ou exercícios de equilíbrio?',
     type: 'buttons',
     options: ['Alongamentos', 'Equilíbrio', 'Ambos'],
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Precisa de ajuda para começar ou adaptar seus exercícios?',
+    text: 'Precisa de ajuda para começar ou adaptar seus exercícios?',
     type: 'text',
     category: 'Exercícios Físicos'
   },
   {
-    text: 'IAVO: Gostaria de receber lembretes diários para se exercitar?',
+    text: 'Gostaria de receber lembretes diários para se exercitar?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Exercícios Físicos'
@@ -226,84 +224,84 @@ export const questions: Question[] = [
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Você costuma sentir cansaço depois de caminhadas leves?',
+    text: 'Você costuma sentir cansaço depois de caminhadas leves?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Já tentou fazer uma pausa para respiração profunda durante suas caminhadas?',
+    text: 'Já tentou fazer uma pausa para respiração profunda durante suas caminhadas?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Prefere exercícios para melhorar sua resistência ou para relaxar?',
+    text: 'Prefere exercícios para melhorar sua resistência ou para relaxar?',
     type: 'buttons',
     options: ['Resistência', 'Relaxar'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Já experimentou fazer alongamentos antes de começar a caminhar?',
+    text: 'Já experimentou fazer alongamentos antes de começar a caminhar?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Quer dicas de como melhorar sua respiração durante atividades físicas?',
+    text: 'Quer dicas de como melhorar sua respiração durante atividades físicas?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Costuma fazer pausas para descansar durante o exercício?',
+    text: 'Costuma fazer pausas para descansar durante o exercício?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Prefere fazer exercícios em casa ou em espaços ao ar livre?',
+    text: 'Prefere fazer exercícios em casa ou em espaços ao ar livre?',
     type: 'buttons',
     options: ['Em casa', 'Ao ar livre'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Você já tentou incluir exercícios de mobilidade para ajudar com o cansaço?',
+    text: 'Você já tentou incluir exercícios de mobilidade para ajudar com o cansaço?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Quer saber mais sobre como a hidratação pode ajudar durante o exercício?',
+    text: 'Quer saber mais sobre como a hidratação pode ajudar durante o exercício?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Costuma se alongar após o exercício?',
+    text: 'Costuma se alongar após o exercício?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Como você se sente depois de realizar suas atividades físicas?',
+    text: 'Como você se sente depois de realizar suas atividades físicas?',
     type: 'text',
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Gostaria de ajustar sua rotina de exercícios para evitar cansaço?',
+    text: 'Gostaria de ajustar sua rotina de exercícios para evitar cansaço?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Quer incluir exercícios de relaxamento na sua rotina para ajudar a melhorar o bem-estar?',
+    text: 'Quer incluir exercícios de relaxamento na sua rotina para ajudar a melhorar o bem-estar?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'
   },
   {
-    text: 'IAVO: Quer saber mais sobre como equilibrar sua alimentação para ter mais energia?',
+    text: 'Quer saber mais sobre como equilibrar sua alimentação para ter mais energia?',
     type: 'buttons',
     options: ['Sim', 'Não'],
     category: 'Saúde Geral'

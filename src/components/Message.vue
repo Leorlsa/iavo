@@ -10,35 +10,43 @@
         <div v-else class="w-full">
           <div v-if="message.type === 'text'" class="flex items-center mb-2">
             <input
-              v-model="response"
-              type="text"
-              @keyup.enter="sendResponse()"
-              placeholder="Digite sua resposta..."
-              class="p-3 flex-grow border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 transition duration-300"
+                v-model="response"
+                type="text"
+                @keyup.enter="sendResponse()"
+                placeholder="Digite sua resposta..."
+                class="p-3 flex-grow border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 transition duration-300"
             />
             <button
-              @click="toggleListening"
-              class="ml-2 p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
-              :class="{ 'animate-pulse': isListening }"
+                @click="toggleListening"
+                class="ml-2 p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
+                :class="{ 'animate-pulse': isListening }"
             >
               <i :class="['pi', isListening ? 'pi-stop' : 'pi-microphone']"></i>
             </button>
           </div>
           <div v-else-if="message.type === 'buttons'" class="flex flex-col items-center">
             <button
-              v-for="option in message.options"
-              :key="option"
-              @click="sendResponse(option)"
-              class="p-2 mb-2 bg-blue-500 text-white rounded w-full max-w-md"
+                v-for="option in message.options"
+                :key="option"
+                @click="sendResponse(option)"
+                class="p-2 mb-2 bg-blue-500 text-white rounded w-full max-w-md"
             >
               {{ option }}
             </button>
           </div>
-          <button v-if="message.type === 'text'" @click="sendResponse()" class="p-3 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition duration-300 transform hover:scale-105">
+          <button
+              v-if="message.type === 'text'"
+              @click="sendResponse()"
+              class="p-3 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition duration-300 transform hover:scale-105"
+          >
             Enviar
           </button>
         </div>
       </div>
+    </div>
+    <!-- Card para a resposta da IA -->
+    <div v-if="aiResponse" class="ai-response-card">
+      <p>{{ aiResponse }}</p>
     </div>
   </div>
 </template>
@@ -48,35 +56,38 @@ import { defineComponent, ref, onMounted, onUnmounted, PropType } from 'vue';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 
+// Inicialização do cliente da API do Google Generative AI
 const client = new GoogleGenerativeAI({
-  apiKey: 'AIzaSyByh63TEtmjLH2WpP2sxafq-VJoqz1mODI',
+  apiKey: 'AIzaSyByh63TEtmjLH2WpP2sxafq-VJoqz1mODI', // Substitua pela sua chave de API
 });
+
+// Função para gerar texto usando a API do Gemini
 export const generateText = async (prompt: string) => {
   try {
     const response = await axios.post(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
-      {
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt, // Texto da pergunta
-              },
-            ],
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
+        {
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
           },
-        ],
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        params: {
-          key: 'AIzaSyBTee6hs8KUhgA1V0SvmJjRMzgZp2yNrVg', // Chave da API
-        },
-      }
+          params: {
+            key: 'AIzaSyByh63TEtmjLH2WpP2sxafq-VJoqz1mODI', // Substitua pela sua chave de API
+          },
+        }
     );
 
-    return response.data; // Retorna a resposta da API
+    return response.data;
   } catch (error) {
     console.error('Erro ao gerar texto:', error);
     throw error;
@@ -147,9 +158,14 @@ export default defineComponent({
     const conversationHistory = ref<{ roboMessage: string; personMessage: string }[]>([]);
     let recognition: CustomSpeechRecognition | null = null;
 
+    // Variável reativa para a resposta da IA
+    const aiResponse = ref('');
+
     onMounted(() => {
       if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        const SpeechRecognition = (window.SpeechRecognition || window.webkitSpeechRecognition) as { new (): CustomSpeechRecognition };
+        const SpeechRecognition = (window.SpeechRecognition || window.webkitSpeechRecognition) as {
+          new (): CustomSpeechRecognition;
+        };
         recognition = new SpeechRecognition();
         if (recognition) {
           recognition.lang = 'pt-BR';
@@ -158,8 +174,8 @@ export default defineComponent({
 
           recognition.onresult = (event: any) => {
             const transcript = Array.from(event.results)
-              .map((result: any) => result[0].transcript)
-              .join('');
+                .map((result: any) => result[0].transcript)
+                .join('');
             response.value = transcript;
           };
 
@@ -224,23 +240,29 @@ export default defineComponent({
       }
 
       // Verifica se a pergunta é "Gostaria de receber as dicas da IAVO?" e a resposta do usuário é "Sim"
-      if (props.message.text === 'Gostaria de receber as dicas da IAVO?' && userResponse.toLowerCase() === 'sim') {
+      if (
+          props.message.text === 'Gostaria de receber as dicas da IAVO?' &&
+          userResponse.toLowerCase() === 'sim'
+      ) {
         // Cria o prompt juntando todas as mensagens e respostas do histórico da conversa
-        const prompt = `De acordo com essas respostas, gere uma ajuda para esse usuário:\n` + 
-          conversationHistory.value
-            .map(entry => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
-            .join('\n');
+        const prompt =
+            `De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
+            conversationHistory.value
+                .map((entry) => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
+                .join('\n');
 
-        console.log('Prompt enviado ao Gemini:', prompt); // Log para verificar o prompt enviado
+        console.log('Prompt enviado ao Gemini:', prompt);
 
         try {
           // Envia o prompt para a API do Gemini
           const generatedText = await generateText(prompt);
           console.log('Texto gerado pela IA:', generatedText);
 
-          // Enviar a resposta gerada pelo Gemini de volta para o chat
-          const iaResponse = generatedText.candidates[0].content.parts[0].text;
-          emit('send', iaResponse);
+          // Extrai o texto da resposta
+          const iaResponseText = generatedText.candidates[0].content.parts[0].text;
+
+          // Atualiza a variável reativa com a resposta da IA
+          aiResponse.value = iaResponseText;
         } catch (error) {
           console.error('Erro ao gerar texto:', error);
         }
@@ -253,6 +275,7 @@ export default defineComponent({
       toggleListening,
       sendResponse,
       conversationHistory,
+      aiResponse, // Retorna a variável reativa da resposta da IA
     };
   },
 });
@@ -324,7 +347,8 @@ export default defineComponent({
   margin-left: 10px;
 }
 
-input, button {
+input,
+button {
   font-size: 1rem;
 }
 
@@ -335,5 +359,16 @@ button {
 
 .pi {
   font-size: 1.2rem;
+}
+
+/* Estilos para o card da resposta da IA */
+.ai-response-card {
+  max-width: 100%;
+  margin-top: 15px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background-color: #f3e5f5; /* Um roxo claro */
+  word-wrap: break-word;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 </style>

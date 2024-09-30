@@ -4,18 +4,18 @@
     <div class="w-full max-w-2xl h-3/4 overflow-y-auto p-6 bg-white rounded-xl shadow-2xl border border-gray-200" ref="chatContainer">
       <TransitionGroup name="message-list" tag="div" class="flex flex-col space-y-6">
         <Message
-          v-for="(message, index) in messages"
-          :key="index"
-          :message="message"
-          :isUser="message.isUser"
+            v-for="(message, index) in messages"
+            :key="index"
+            :message="message"
+            :isUser="message.isUser"
         />
         <Message
-          v-if="currentQuestion"
-          :key="'input'"
-          :message="currentQuestion"
-          :isUser="true"
-          :isInput="true"
-          @send="handleSend"
+            v-if="currentQuestion"
+            :key="'input'"
+            :message="currentQuestion"
+            :isUser="true"
+            :isInput="true"
+            @send="handleSend"
         />
       </TransitionGroup>
     </div>
@@ -26,6 +26,7 @@
 import { defineComponent, ref, nextTick, onMounted, watch } from 'vue';
 import Message from '@/components/Message.vue';
 import { questions, getQuestionsByCategory, Question } from '@/data/question';
+import { generateText } from '@/components/Message.vue'; // Importe a função generateText
 
 interface Message {
   text: string;
@@ -47,6 +48,7 @@ export default defineComponent({
     const userName = ref('');
     const preferredName = ref('');
     const selectedCategory = ref<string | null>(null);
+    const conversationHistory = ref<{ roboMessage: string; personMessage: string }[]>([]);
 
     const scrollToBottom = () => {
       nextTick(() => {
@@ -66,7 +68,7 @@ export default defineComponent({
       }
     };
 
-    const handleSend = (response: string) => {
+    const handleSend = async (response: string) => {
       if (questionIndex === 0) {
         userName.value = response;
       } else if (questionIndex === 1) {
@@ -74,6 +76,14 @@ export default defineComponent({
       }
 
       messages.value.push({ text: response, isUser: true });
+
+      // Adicionar ao histórico de conversa
+      if (currentQuestion.value) {
+        conversationHistory.value.push({
+          roboMessage: currentQuestion.value.text,
+          personMessage: response,
+        });
+      }
 
       if (questionIndex === 5) { // Índice da pergunta de seleção de categoria
         selectedCategory.value = response;
@@ -87,7 +97,38 @@ export default defineComponent({
         updateQuestionText();
         messages.value.push({ text: currentQuestion.value.text, isUser: false });
       } else {
+        // Se chegarmos ao final das perguntas, verificar se devemos gerar a resposta da IA
         currentQuestion.value = null;
+
+        // Verifica se a última pergunta foi "Gostaria de receber as dicas da IAVO?"
+        if (
+            conversationHistory.value.length > 0 &&
+            conversationHistory.value[conversationHistory.value.length - 1].roboMessage.includes('Gostaria de receber as dicas da IAVO?') &&
+            response.toLowerCase() === 'sim'
+        ) {
+          // Gera o prompt com base no histórico da conversa
+          const prompt =
+              `De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
+              conversationHistory.value
+                  .map((entry) => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
+                  .join('\n');
+
+          console.log('Prompt enviado ao Gemini:', prompt);
+
+          try {
+            // Chama a função generateText
+            const generatedText = await generateText(prompt);
+            console.log('Texto gerado pela IA:', generatedText);
+
+            // Extrai o texto da resposta
+            const iaResponseText = generatedText.candidates[0].content.parts[0].text;
+
+            // Adiciona a resposta da IA às mensagens
+            messages.value.push({ text: iaResponseText, isUser: false });
+          } catch (error) {
+            console.error('Erro ao gerar texto:', error);
+          }
+        }
       }
       scrollToBottom();
     };
