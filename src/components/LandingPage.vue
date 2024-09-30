@@ -5,7 +5,7 @@
       <div class="container text-white">
         <h1>IA Amiga do Idoso</h1>
         <p>Seu assistente pessoal para uma vida mais saudável e ativa na melhor idade.</p>
-        <button class="btn btn-primary" style="background-color: rgb(66, 133, 244)">Comece Agora</button>
+        <a class="btn btn-secondary" href="/chat" style="background-color: rgb(66, 133, 244)">Comece Agora</a>
       </div>
     </section>
 
@@ -85,7 +85,7 @@ export default {
   background-image: url('~@/assets/photos/pexels-shvetsa-5257302.jpg');
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
+  //background-attachment: fixed;
   background-color: rgba(0, 0, 0, 0.5);
   background-blend-mode: darken;
 }
