@@ -6,7 +6,7 @@
         <span v-else>🤖</span>
       </div>
       <div class="text-container">
-        <p v-if="!isInput" class="text-lg">{{ message.text }}</p>
+        <div v-if="!isInput" class="text-lg" v-html="markdownToHtml(message.text)"></div>
         <div v-else class="w-full">
           <div v-if="message.type === 'text'" class="flex items-center mb-2">
             <input
@@ -55,6 +55,7 @@
 import { defineComponent, ref, onMounted, onUnmounted, PropType } from 'vue';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
+import { marked } from 'marked'; // Importe a biblioteca marked
 
 // Inicialização do cliente da API do Google Generative AI
 const client = new GoogleGenerativeAI({
@@ -161,6 +162,10 @@ export default defineComponent({
     // Variável reativa para a resposta da IA
     const aiResponse = ref('');
 
+    const markdownToHtml = (text: string) => {
+      return marked(text);
+    };
+
     onMounted(() => {
       if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
         const SpeechRecognition = (window.SpeechRecognition || window.webkitSpeechRecognition) as {
@@ -246,10 +251,11 @@ export default defineComponent({
       ) {
         // Cria o prompt juntando todas as mensagens e respostas do histórico da conversa
         const prompt =
-            `De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
+            `Envie apenas texto simples sem formatação. De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
             conversationHistory.value
                 .map((entry) => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
-                .join('\n');
+                .join('\n') +
+            '\n\nLembre-se: Responda apenas com texto simples, sem markdown ou qualquer outra formatação.';
 
         console.log('Prompt enviado ao Gemini:', prompt);
 
@@ -276,6 +282,7 @@ export default defineComponent({
       sendResponse,
       conversationHistory,
       aiResponse, // Retorna a variável reativa da resposta da IA
+      markdownToHtml,
     };
   },
 });
@@ -370,5 +377,32 @@ button {
   background-color: #f3e5f5; /* Um roxo claro */
   word-wrap: break-word;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Adicione estilos para o Markdown renderizado */
+:deep(.markdown-content) {
+  /* Estilos para elementos Markdown */
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+  }
+  p {
+    margin-bottom: 1em;
+  }
+  ul, ol {
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+  }
+  code {
+    background-color: #f0f0f0;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background-color: #f0f0f0;
+    padding: 1em;
+    border-radius: 5px;
+    overflow-x: auto;
+  }
 }
 </style>

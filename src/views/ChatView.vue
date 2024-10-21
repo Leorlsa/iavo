@@ -108,8 +108,8 @@ export default defineComponent({
         ) {
           // Gera o prompt com base no histórico da conversa
           const prompt =
-              `De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
-              conversationHistory.value
+          `Envie apenas texto simples sem formatação. De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
+          conversationHistory.value
                   .map((entry) => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
                   .join('\n');
 
