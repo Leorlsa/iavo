@@ -23,6 +23,12 @@
             >
               <i :class="['pi', isListening ? 'pi-stop' : 'pi-microphone']"></i>
             </button>
+            <button
+              @click="clearResponse"
+              class="ml-2 p-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300"
+            >
+              Limpar
+            </button>
           </div>
           <div v-else-if="message.type === 'buttons'" class="flex flex-col items-center">
             <button
@@ -47,6 +53,13 @@
     <!-- Card para a resposta da IA -->
     <div v-if="aiResponse" class="ai-response-card">
       <p>{{ aiResponse }}</p>
+      <button @click="copyResponse" class="copy-button">
+        Copiar a resposta
+      </button>
+    </div>
+    <!-- Indicador de carregamento -->
+    <div v-if="isLoading" class="loading-indicator">
+      Carregando...
     </div>
   </div>
 </template>
@@ -156,6 +169,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const response = ref('');
     const isListening = ref(false);
+    const isLoading = ref(false); // Variável reativa para o estado de carregamento
     const conversationHistory = ref<{ roboMessage: string; personMessage: string }[]>([]);
     let recognition: CustomSpeechRecognition | null = null;
 
@@ -164,6 +178,10 @@ export default defineComponent({
 
     const markdownToHtml = (text: string) => {
       return marked(text);
+    };
+
+    const clearResponse = () => {
+      response.value = '';
     };
 
     onMounted(() => {
@@ -244,45 +262,69 @@ export default defineComponent({
         recognition.stop();
       }
 
-      // Verifica se a pergunta é "Gostaria de receber as dicas da IAVO?" e a resposta do usuário é "Sim"
-      if (
-          props.message.text === 'Gostaria de receber as dicas da IAVO?' &&
-          userResponse.toLowerCase() === 'sim'
-      ) {
-        // Cria o prompt juntando todas as mensagens e respostas do histórico da conversa
+      isLoading.value = true; // Inicia o carregamento
+
+      try {
+        // Verifica se a pergunta é "Gostaria de receber as dicas da IAVO?" e a resposta do usuário é "Sim"
+        if (
+            props.message.text === 'Gostaria de receber as dicas da IAVO?' &&
+            userResponse.toLowerCase() === 'sim'
+        ) {
+         // Cria o prompt juntando todas as mensagens e respostas do histórico da conversa
         const prompt =
-            `Envie apenas texto simples sem formatação. De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
+            `**Por favor, forneça uma resposta completa e detalhada ao usuário, levando em consideração as mensagens anteriores.**\n` +
+            `Sua resposta deve ser em formato Markdown e conter o máximo de informações úteis possíveis em uma única resposta. Não faça perguntas adicionais ao usuário.\n\n` +
             conversationHistory.value
-                .map((entry) => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
-                .join('\n') +
-            '\n\nLembre-se: Responda apenas com texto simples, sem markdown ou qualquer outra formatação.';
+                .map((entry) => `**Bot:** ${entry.roboMessage}\n**Usuário:** ${entry.personMessage}`)
+                .join('\n\n') +
+            `\n\n**Instruções Adicionais:**\n` +
+            `- Forneça conselhos personalizados que ajudem o usuário a ter uma vida mais saudável e ativa.\n` +
+            `- Inclua sugestões de exercícios físicos adequados, atividades para manter a mente ativa, dicas de alimentação saudável e orientações para acompanhar a saúde.\n` +
+            `- Responda exclusivamente em Markdown.\n` +
+            `- Evite formatações desnecessárias e foque na clareza e no detalhamento.`;
 
         console.log('Prompt enviado ao Gemini:', prompt);
+          try {
+            // Envia o prompt para a API do Gemini
+            const generatedText = await generateText(prompt);
+            console.log('Texto gerado pela IA:', generatedText);
 
-        try {
-          // Envia o prompt para a API do Gemini
-          const generatedText = await generateText(prompt);
-          console.log('Texto gerado pela IA:', generatedText);
+            // Extrai o texto da resposta
+            const iaResponseText = generatedText.candidates[0].content.parts[0].text;
 
-          // Extrai o texto da resposta
-          const iaResponseText = generatedText.candidates[0].content.parts[0].text;
-
-          // Atualiza a variável reativa com a resposta da IA
-          aiResponse.value = iaResponseText;
-        } catch (error) {
-          console.error('Erro ao gerar texto:', error);
+            // Atualiza a variável reativa com a resposta da IA
+            aiResponse.value = iaResponseText;
+          } catch (error) {
+            console.error('Erro ao gerar texto:', error);
+          }
         }
+      } finally {
+        isLoading.value = false; // Termina o carregamento
       }
+    };
+
+    const copyResponse = () => {
+      const textToCopy = aiResponse.value;
+      const tempInput = document.createElement('input');
+      tempInput.value = textToCopy;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      console.log('Texto copiado para a área de transferência:', textToCopy);
     };
 
     return {
       response,
       isListening,
+      isLoading, // Retorna a variável reativa do estado de carregamento
       toggleListening,
+      clearResponse,
       sendResponse,
       conversationHistory,
       aiResponse, // Retorna a variável reativa da resposta da IA
       markdownToHtml,
+      copyResponse,
     };
   },
 });
@@ -404,5 +446,13 @@ button {
     border-radius: 5px;
     overflow-x: auto;
   }
+}
+
+/* Estilos para o indicador de carregamento */
+.loading-indicator {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin-top: 10px;
 }
 </style>

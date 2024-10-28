@@ -9,15 +9,29 @@
             :message="message"
             :isUser="message.isUser"
         />
+        
+        <!-- @ts-ignore -->
         <Message
             v-if="currentQuestion"
             :key="'input'"
-            :message="currentQuestion"
+            :message="currentQuestion" 
             :isUser="true"
             :isInput="true"
             @send="handleSend"
         />
       </TransitionGroup>
+      <!-- Indicador de carregamento -->
+      <div v-if="isLoading" class="loading-indicator">
+        Analisando seu caso para te dar as melhores dicas...
+      </div>
+      <!-- Botão de Copiar Texto -->
+      <button v-if="botResponseText" @click="copyText" class="copy-button">
+        Copiar Texto
+      </button>
+      <!-- Botão de Recarregar Página -->
+      <button v-if="botResponseText" @click="reloadPage" class="reload-button">
+        Recarregar Página
+      </button>
     </div>
   </div>
 </template>
@@ -49,6 +63,8 @@ export default defineComponent({
     const preferredName = ref('');
     const selectedCategory = ref<string | null>(null);
     const conversationHistory = ref<{ roboMessage: string; personMessage: string }[]>([]);
+    const isLoading = ref(false); // Variável reativa para o estado de carregamento
+    const botResponseText = ref('');
 
     const scrollToBottom = () => {
       nextTick(() => {
@@ -106,12 +122,20 @@ export default defineComponent({
             conversationHistory.value[conversationHistory.value.length - 1].roboMessage.includes('Gostaria de receber as dicas da IAVO?') &&
             response.toLowerCase() === 'sim'
         ) {
-          // Gera o prompt com base no histórico da conversa
+          isLoading.value = true; // Inicia o carregamento
+
+          // Cria o prompt juntando todas as mensagens e respostas do histórico da conversa
           const prompt =
-          `Envie apenas texto simples sem formatação. De acordo com essas respostas, gere uma ajuda para esse usuário:\n` +
-          conversationHistory.value
-                  .map((entry) => `Bot: ${entry.roboMessage}\nUsuário: ${entry.personMessage}`)
-                  .join('\n');
+            `**Por favor, forneça uma resposta completa e detalhada ao usuário, levando em consideração as mensagens anteriores.**\n` +
+            `Sua resposta deve ser em formato Markdown e conter o máximo de informações úteis possíveis em uma única resposta. Não faça perguntas adicionais ao usuário nao pergunte se ele quer mais informacoes e nao pergunte se ele entendeu o que voce disse e nem se ele quer mais detalhes e nem se elesta disponivel para continuar a conversa.\n\n` +
+            conversationHistory.value
+                .map((entry) => `**Bot:** ${entry.roboMessage}\n**Usuário:** ${entry.personMessage}`)
+                .join('\n\n') +
+            `\n\n**Instruções Adicionais:**\n` +
+            `- Forneça conselhos personalizados que ajudem o usuário a ter uma vida mais saudável e ativa.\n` +
+            `- Inclua sugestões de acordo com a categoria selecionada pela usuário.\n` +
+            `- Responda exclusivamente em Markdown.\n` +
+            `- Evite formatações desnecessárias e foque na clareza e no detalhamento.`;
 
           console.log('Prompt enviado ao Gemini:', prompt);
 
@@ -125,12 +149,31 @@ export default defineComponent({
 
             // Adiciona a resposta da IA às mensagens
             messages.value.push({ text: iaResponseText, isUser: false });
+            botResponseText.value = iaResponseText;
           } catch (error) {
             console.error('Erro ao gerar texto:', error);
+          } finally {
+            isLoading.value = false; // Termina o carregamento
           }
         }
       }
       scrollToBottom();
+    };
+
+    const copyText = () => {
+      const textToCopy = botResponseText.value;
+      if (textToCopy) {
+        const tempInput = document.createElement('input');
+        tempInput.value = textToCopy;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+    };
+
+    const reloadPage = () => {
+      window.location.reload();
     };
 
     if (currentQuestion.value) {
@@ -152,7 +195,54 @@ export default defineComponent({
       chatContainer,
       userName,
       preferredName,
+      isLoading, // Retorna a variável reativa do estado de carregamento
+      botResponseText,
+      copyText,
+      reloadPage,
     };
   },
 });
 </script>
+
+<style scoped>
+/* Estilos para o indicador de carregamento */
+.loading-indicator {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* Estilos para o botão de Copiar Texto */
+.copy-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.copy-button:hover {
+  background-color: #45a049;
+}
+
+/* Estilos para o botão de Recarregar Página */
+.reload-button {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  margin-top: 10px;
+  margin-left: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.reload-button:hover {
+  background-color: #d32f2f;
+}
+</style>
